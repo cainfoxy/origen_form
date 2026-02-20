@@ -1,0 +1,565 @@
+/* =============================================================================
+   Origen Sostenible - Formulario Evaluación Energética v1.5
+   Frontend Styles
+   ============================================================================= */
+
+/* Variables */
+:root {
+    --origen-primary: #00AA9F;
+    --origen-primary-dark: #008A82;
+    --origen-secondary: #F39322;
+    --origen-secondary-dark: #d87e15;
+    --origen-bg: #F9F9F7;
+    --origen-white: #FFFFFF;
+    --origen-text: #333333;
+    --origen-text-light: #666666;
+    --origen-gray: #E0E0E0;
+    --origen-radius: 8px;
+}
+
+/* Wrapper */
+.origen-form-wrapper {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    color: var(--origen-text);
+    background: var(--origen-bg);
+    border-radius: 16px;
+}
+
+/* Barra de progreso */
+.origen-progress-container {
+    margin-bottom: 30px;
+}
+
+.origen-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--origen-gray);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.origen-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--origen-primary) 0%, var(--origen-secondary) 100%);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+.origen-step-indicator {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--origen-text-light);
+    font-weight: 500;
+}
+
+/* Pasos del formulario */
+.origen-form-step {
+    display: none;
+}
+
+.origen-form-step.active {
+    display: block;
+    animation: origenFadeIn 0.3s ease;
+}
+
+@keyframes origenFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Títulos */
+.origen-step-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--origen-text);
+    margin: 0 0 8px 0;
+    text-align: center;
+}
+
+.origen-step-subtitle {
+    font-size: 15px;
+    color: var(--origen-text-light);
+    margin: 0 0 25px 0;
+    text-align: center;
+}
+
+.origen-subsection-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--origen-text);
+    margin: 0 0 15px 0;
+}
+
+/* Grid de opciones */
+.origen-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 500px) {
+    .origen-options-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tarjetas de opción */
+.origen-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 15px;
+    background: var(--origen-white);
+    border: 2px solid var(--origen-gray);
+    border-radius: var(--origen-radius);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    min-height: 80px;
+}
+
+.origen-option-card:hover {
+    border-color: var(--origen-primary);
+    box-shadow: 0 2px 12px rgba(0, 170, 159, 0.15);
+}
+
+.origen-option-card input[type="radio"],
+.origen-option-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.origen-option-card input[type="radio"]:checked ~ .origen-option-icon,
+.origen-option-card input[type="checkbox"]:checked ~ .origen-option-icon {
+    transform: scale(1.1);
+}
+
+.origen-option-card input[type="radio"]:checked ~ .origen-option-text,
+.origen-option-card input[type="checkbox"]:checked ~ .origen-option-text {
+    color: var(--origen-primary);
+    font-weight: 600;
+}
+
+.origen-option-card:has(input:checked) {
+    border-color: var(--origen-primary);
+    background: rgba(0, 170, 159, 0.05);
+    box-shadow: 0 2px 12px rgba(0, 170, 159, 0.2);
+}
+
+.origen-option-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.origen-option-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--origen-text);
+    line-height: 1.3;
+}
+
+.origen-price-tag {
+    color: var(--origen-secondary);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Toggle kWh / € */
+.origen-toggle-container {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 20px;
+    background: var(--origen-gray);
+    border-radius: 8px;
+    padding: 4px;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.consumption-toggle {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--origen-text-light);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.consumption-toggle.active {
+    background: var(--origen-primary);
+    color: var(--origen-white);
+    box-shadow: 0 2px 6px rgba(0, 170, 159, 0.3);
+}
+
+.consumption-toggle:hover:not(.active) {
+    color: var(--origen-text);
+}
+
+/* Grupos de inputs */
+.origen-input-group {
+    margin-bottom: 18px;
+}
+
+.origen-input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--origen-text);
+    margin-bottom: 6px;
+}
+
+.origen-input-group label .required {
+    color: #E53935;
+}
+
+.origen-input-group label .optional {
+    color: var(--origen-text-light);
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.origen-input-group input,
+.origen-input-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--origen-gray);
+    border-radius: var(--origen-radius);
+    background: var(--origen-white);
+    font-size: 15px;
+    color: var(--origen-text);
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.origen-input-group input:focus,
+.origen-input-group textarea:focus {
+    border-color: var(--origen-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 170, 159, 0.1);
+}
+
+.origen-input-group input::placeholder,
+.origen-input-group textarea::placeholder {
+    color: #BBBBBB;
+}
+
+.origen-input-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Checkboxes (privacidad, comercial) */
+.origen-checkbox-group {
+    margin-bottom: 12px;
+}
+
+.origen-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--origen-text);
+    line-height: 1.5;
+}
+
+.origen-checkbox-group input[type="checkbox"] {
+    accent-color: var(--origen-secondary);
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.origen-checkbox-label a {
+    color: var(--origen-primary);
+    text-decoration: underline;
+}
+
+.origen-checkbox-label a:hover {
+    color: var(--origen-primary-dark);
+}
+
+/* Botones de navegación */
+.origen-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    gap: 12px;
+}
+
+.origen-btn-primary {
+    background: var(--origen-primary);
+    color: var(--origen-white);
+    border: none;
+    padding: 14px 30px;
+    border-radius: var(--origen-radius);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
+}
+
+.origen-btn-primary:hover {
+    background: var(--origen-primary-dark);
+    box-shadow: 0 4px 12px rgba(0, 170, 159, 0.3);
+}
+
+.origen-btn-primary:disabled {
+    background: var(--origen-gray);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.origen-btn-secondary {
+    background: transparent;
+    color: var(--origen-primary);
+    border: 2px solid var(--origen-primary);
+    padding: 14px 30px;
+    border-radius: var(--origen-radius);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
+}
+
+.origen-btn-secondary:hover {
+    background: rgba(0, 170, 159, 0.05);
+}
+
+/* Presupuesto */
+.origen-budget-card {
+    background: var(--origen-white);
+    border: 2px solid var(--origen-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(0, 170, 159, 0.15);
+}
+
+.origen-budget-header {
+    background: linear-gradient(135deg, var(--origen-primary) 0%, var(--origen-primary-dark) 100%);
+    padding: 20px;
+    text-align: center;
+    color: var(--origen-white);
+}
+
+.origen-budget-header h3 {
+    margin: 8px 0 0 0;
+    font-size: 18px;
+}
+
+.origen-budget-icon {
+    font-size: 40px;
+}
+
+.origen-budget-details {
+    padding: 5px 0;
+}
+
+.origen-budget-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.origen-budget-row:last-child {
+    border-bottom: none;
+}
+
+.origen-budget-label {
+    font-size: 14px;
+    color: var(--origen-text-light);
+    font-weight: 500;
+}
+
+.origen-budget-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--origen-text);
+}
+
+.origen-budget-total {
+    background: linear-gradient(135deg, var(--origen-primary) 0%, var(--origen-primary-dark) 100%);
+    padding: 16px 20px;
+}
+
+.origen-budget-total .origen-budget-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.origen-budget-total .origen-budget-value {
+    color: var(--origen-white);
+    font-size: 22px;
+}
+
+.origen-budget-savings {
+    background: #f0faf9;
+    padding: 5px 0;
+}
+
+.origen-savings-value {
+    color: var(--origen-primary) !important;
+}
+
+/* Disclaimer */
+.origen-disclaimer {
+    background: #FFF8E7;
+    border-left: 4px solid var(--origen-secondary);
+    padding: 15px 20px;
+    border-radius: 0 var(--origen-radius) var(--origen-radius) 0;
+    margin: 20px 0;
+}
+
+.origen-disclaimer p {
+    font-size: 13px;
+    color: var(--origen-text-light);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Mensaje de éxito */
+.origen-success-message {
+    text-align: center;
+    padding: 40px 20px;
+    animation: origenFadeIn 0.5s ease;
+}
+
+.origen-success-icon {
+    background: linear-gradient(135deg, #00AA9F 0%, #F39322 100%);
+    color: white;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    margin: 0 auto 20px auto;
+    line-height: 1;
+}
+
+.origen-success-message h2 {
+    font-size: 24px;
+    color: var(--origen-primary);
+    margin: 0 0 10px 0;
+}
+
+.origen-success-message p {
+    font-size: 15px;
+    color: var(--origen-text-light);
+    line-height: 1.6;
+}
+
+.origen-success-contact {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.origen-success-contact a {
+    color: var(--origen-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.origen-success-contact a:hover {
+    text-decoration: underline;
+}
+
+/* Spinner */
+.origen-spinner {
+    text-align: center;
+    padding: 30px;
+}
+
+.origen-spinner-circle {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--origen-gray);
+    border-top-color: var(--origen-primary);
+    border-radius: 50%;
+    animation: origenSpin 0.8s linear infinite;
+    margin: 0 auto 15px auto;
+}
+
+@keyframes origenSpin {
+    to { transform: rotate(360deg); }
+}
+
+.origen-spinner p {
+    font-size: 14px;
+    color: var(--origen-text-light);
+}
+
+/* Error */
+.origen-field-error {
+    border-color: #E53935 !important;
+}
+
+.origen-error-text {
+    color: #E53935;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .origen-form-wrapper {
+        padding: 20px 15px;
+        border-radius: 0;
+    }
+
+    .origen-step-title {
+        font-size: 20px;
+    }
+
+    .origen-option-card {
+        padding: 15px 12px;
+        min-height: 70px;
+    }
+
+    .origen-option-icon {
+        font-size: 28px;
+    }
+
+    .origen-btn-primary,
+    .origen-btn-secondary {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+
+    .origen-budget-total .origen-budget-value {
+        font-size: 18px;
+    }
+}

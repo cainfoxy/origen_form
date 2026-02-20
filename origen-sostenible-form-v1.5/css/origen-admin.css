@@ -1,0 +1,387 @@
+/* =============================================================================
+   Origen Sostenible - Admin Panel Styles v1.5
+   ============================================================================= */
+
+.origen-admin-wrap {
+    max-width: 1200px;
+}
+
+.origen-admin-wrap h1 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Header */
+.origen-admin-header {
+    background: linear-gradient(135deg, #00AA9F 0%, #008A82 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.origen-admin-header h1 {
+    color: white;
+    margin: 0;
+    font-size: 22px;
+}
+
+.origen-admin-header .badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* Filtros */
+.origen-filters {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    border: 1px solid #E0E0E0;
+}
+
+.origen-filters label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+}
+
+.origen-filters select,
+.origen-filters input[type="date"] {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.origen-filters .button {
+    margin-left: auto;
+}
+
+/* Tabla */
+.origen-admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.origen-admin-table thead th {
+    background: #333;
+    color: white;
+    padding: 12px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.origen-admin-table tbody tr {
+    transition: background 0.2s;
+}
+
+.origen-admin-table tbody tr:hover {
+    background: #f0faf9;
+}
+
+.origen-admin-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.origen-admin-table tbody tr:nth-child(even):hover {
+    background: #f0faf9;
+}
+
+.origen-admin-table td {
+    padding: 10px 15px;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.origen-admin-table .badge-yes {
+    background: #00AA9F;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.origen-admin-table .badge-no {
+    background: #E0E0E0;
+    color: #666;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.origen-admin-table .action-link {
+    color: #00AA9F;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.origen-admin-table .action-link:hover {
+    color: #008A82;
+    text-decoration: underline;
+}
+
+/* Paginación */
+.origen-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.origen-pagination a,
+.origen-pagination span {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.origen-pagination a {
+    background: white;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.origen-pagination a:hover {
+    background: #00AA9F;
+    color: white;
+    border-color: #00AA9F;
+}
+
+.origen-pagination .current {
+    background: #00AA9F;
+    color: white;
+    border: 1px solid #00AA9F;
+    font-weight: 600;
+}
+
+/* Detalle de registro */
+.origen-detail-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.origen-detail-card h2 {
+    background: #333;
+    color: white;
+    margin: 0;
+    padding: 15px 20px;
+    font-size: 16px;
+}
+
+.origen-detail-card h2.budget-header {
+    background: linear-gradient(135deg, #F39322 0%, #e07d0a 100%);
+}
+
+.origen-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.origen-detail-table td {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.origen-detail-table td:first-child {
+    font-weight: 600;
+    width: 35%;
+    color: #666;
+    background: #fafafa;
+}
+
+.origen-detail-table td:last-child {
+    color: #333;
+}
+
+.origen-detail-table .total-row td {
+    background: #00AA9F !important;
+    color: white !important;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Precios settings */
+.origen-pricing-section {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.origen-pricing-section h2 {
+    color: #333;
+    font-size: 18px;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #00AA9F;
+}
+
+.origen-pricing-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+}
+
+.origen-pricing-grid .grid-header {
+    font-weight: 700;
+    font-size: 13px;
+    color: #666;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.origen-pricing-grid label {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+.origen-pricing-grid input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.origen-pricing-grid input:focus {
+    border-color: #00AA9F;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 170, 159, 0.15);
+}
+
+.origen-pricing-single {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.origen-pricing-single label {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.origen-pricing-single input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    max-width: 200px;
+}
+
+.origen-pricing-single input:focus {
+    border-color: #00AA9F;
+    outline: none;
+}
+
+.origen-save-btn {
+    background: #00AA9F;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.origen-save-btn:hover {
+    background: #008A82;
+}
+
+/* Export page */
+.origen-export-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    padding: 30px;
+    text-align: center;
+    max-width: 500px;
+}
+
+.origen-export-card p {
+    color: #666;
+    margin: 10px 0 25px 0;
+}
+
+.origen-export-btn {
+    display: inline-block;
+    background: #00AA9F;
+    color: white;
+    padding: 14px 35px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.origen-export-btn:hover {
+    background: #008A82;
+    color: white;
+}
+
+/* Empty state */
+.origen-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.origen-empty-state .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+/* Back link */
+.origen-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #00AA9F;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.origen-back-link:hover {
+    color: #008A82;
+}
