@@ -533,6 +533,45 @@
     margin-top: 4px;
 }
 
+/* Inputs condicionales "Otro" */
+.origen-otro-input {
+    margin-top: 15px;
+}
+
+.origen-otro-input label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--origen-text);
+    margin-bottom: 6px;
+}
+
+.origen-otro-input input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--origen-gray);
+    border-radius: var(--origen-radius);
+    background: var(--origen-white);
+    font-size: 15px;
+    color: var(--origen-text);
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.origen-otro-input input[type="number"]:focus {
+    border-color: var(--origen-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 170, 159, 0.1);
+}
+
+/* Subtexto en tarjetas de opción */
+.origen-option-subtext {
+    font-size: 12px;
+    color: var(--origen-text-light);
+    margin-top: 2px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .origen-form-wrapper {
@@ -545,12 +584,14 @@
     }
 
     .origen-option-card {
-        padding: 15px 12px;
-        min-height: 70px;
+        padding: 20px 15px;
+        min-height: 80px;
+        margin-bottom: 20px;
     }
 
     .origen-option-icon {
-        font-size: 28px;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
     }
 
     .origen-btn-primary,
@@ -561,5 +602,15 @@
 
     .origen-budget-total .origen-budget-value {
         font-size: 18px;
+    }
+
+    /* Inputs a ancho completo */
+    .origen-input-group input[type="text"],
+    .origen-input-group input[type="email"],
+    .origen-input-group input[type="tel"],
+    .origen-input-group textarea {
+        width: 100% !important;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 }

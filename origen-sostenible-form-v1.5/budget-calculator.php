@@ -1,6 +1,6 @@
 <?php
 /**
- * Clase para cálculos de presupuesto - Origen Sostenible v1.5
+ * Clase para cálculos de presupuesto - Origen Sostenible v1.5.1
  */
 
 if (!defined('ABSPATH')) {
@@ -13,13 +13,15 @@ class Origen_Budget_Calculator {
     private $batteries;
     private $ve_charger_price;
 
-    // Constantes
-    const HSP = 4.8;
-    const ELECTRICITY_PRICE = 0.2;
-    const SQM_PER_PANEL = 2.65;
+    // Parámetros técnicos editables
+    private $sqm_per_panel;
+    private $hsp;
+    private $electricity_price;
+    private $watts_per_panel;
 
     public function __construct() {
         $this->load_prices();
+        $this->load_technical_params();
     }
 
     /**
@@ -48,6 +50,16 @@ class Origen_Budget_Calculator {
     }
 
     /**
+     * Carga parámetros técnicos desde wp_options
+     */
+    private function load_technical_params() {
+        $this->sqm_per_panel    = floatval(get_option('origen_sqm_per_panel', 2.65));
+        $this->hsp              = floatval(get_option('origen_hsp_hours', 4.8));
+        $this->electricity_price = floatval(get_option('origen_electricity_price', 0.2));
+        $this->watts_per_panel  = intval(get_option('origen_watts_per_panel', 590));
+    }
+
+    /**
      * Obtener instalaciones
      */
     public function get_installations() {
@@ -69,49 +81,73 @@ class Origen_Budget_Calculator {
     }
 
     /**
+     * Obtener parámetros técnicos para frontend JS
+     */
+    public function get_technical_params() {
+        return array(
+            'sqm_per_panel'    => $this->sqm_per_panel,
+            'hsp'              => $this->hsp,
+            'electricity_price' => $this->electricity_price,
+            'watts_per_panel'  => $this->watts_per_panel,
+        );
+    }
+
+    /**
      * Calcula kW necesarios por consumo en kWh
      */
-    public function kw_by_kwh($consumption_value) {
-        $averages = array(
-            'menos_200' => 150,
-            '200_500'   => 350,
-            'mas_500'   => 650,
-        );
+    public function kw_by_kwh($consumption_value, $custom_value = null) {
+        if ($consumption_value === 'otro_kwh' && $custom_value) {
+            $kwh_mes = floatval($custom_value);
+        } else {
+            $averages = array(
+                'menos_200' => 150,
+                '200_500'   => 350,
+                'mas_500'   => 650,
+            );
+            $kwh_mes = isset($averages[$consumption_value]) ? $averages[$consumption_value] : 350;
+        }
 
-        $kwh_mes = isset($averages[$consumption_value]) ? $averages[$consumption_value] : 350;
         $kwh_dia = $kwh_mes / 30;
-        return $kwh_dia / self::HSP;
+        return $kwh_dia / $this->hsp;
     }
 
     /**
      * Calcula kW necesarios por gasto en euros
      */
-    public function kw_by_euros($consumption_value) {
-        $averages = array(
-            '50_150'  => 100,
-            '150_300' => 225,
-            'mas_300' => 400,
-        );
+    public function kw_by_euros($consumption_value, $custom_value = null) {
+        if ($consumption_value === 'otro_euros' && $custom_value) {
+            $euro_mes = floatval($custom_value);
+        } else {
+            $averages = array(
+                '50_150'  => 100,
+                '150_300' => 225,
+                'mas_300' => 400,
+            );
+            $euro_mes = isset($averages[$consumption_value]) ? $averages[$consumption_value] : 225;
+        }
 
-        $euro_mes = isset($averages[$consumption_value]) ? $averages[$consumption_value] : 225;
         $euro_dia = $euro_mes / 30;
-        $kwh_dia  = $euro_dia / self::ELECTRICITY_PRICE;
-        return $kwh_dia / self::HSP;
+        $kwh_dia  = $euro_dia / $this->electricity_price;
+        return $kwh_dia / $this->hsp;
     }
 
     /**
      * Calcula kW máximos por superficie disponible
      */
-    public function kw_by_surface($surface_value) {
-        $surfaces = array(
-            'menos_20'  => 15,
-            '20_50'     => 35,
-            'mas_50'    => 65,
-            'no_seguro' => 35,
-        );
+    public function kw_by_surface($surface_value, $custom_value = null) {
+        if ($surface_value === 'otro_superficie' && $custom_value) {
+            $sqm = floatval($custom_value);
+        } else {
+            $surfaces = array(
+                'menos_20'  => 15,
+                '20_50'     => 35,
+                'mas_50'    => 65,
+                'no_seguro' => 35,
+            );
+            $sqm = isset($surfaces[$surface_value]) ? $surfaces[$surface_value] : 35;
+        }
 
-        $sqm = isset($surfaces[$surface_value]) ? $surfaces[$surface_value] : 35;
-        $panels_possible = floor($sqm / self::SQM_PER_PANEL);
+        $panels_possible = floor($sqm / $this->sqm_per_panel);
 
         // Buscar instalación que quepa en ese número de placas
         $kw_surface = 0;
@@ -153,22 +189,35 @@ class Origen_Budget_Calculator {
         $consumption_type  = isset($data['consumption_type']) ? $data['consumption_type'] : 'kwh';
         $consumption_value = isset($data['consumption_value']) ? $data['consumption_value'] : '';
 
+        // Valores personalizados
+        $custom_kwh     = isset($data['consumption_other_kwh']) ? $data['consumption_other_kwh'] : null;
+        $custom_euros   = isset($data['consumption_other_euros']) ? $data['consumption_other_euros'] : null;
+        $custom_surface = isset($data['roof_surface_other']) ? $data['roof_surface_other'] : null;
+
         if ($consumption_type === 'euro') {
-            $kw_consumption = $this->kw_by_euros($consumption_value);
+            $kw_consumption = $this->kw_by_euros($consumption_value, $custom_euros);
         } else {
-            $kw_consumption = $this->kw_by_kwh($consumption_value);
+            $kw_consumption = $this->kw_by_kwh($consumption_value, $custom_kwh);
         }
 
         // Criterio C: kW por superficie
         $surface_value = isset($data['roof_surface']) ? $data['roof_surface'] : 'no_seguro';
-        $kw_surface    = $this->kw_by_surface($surface_value);
+        $kw_surface    = $this->kw_by_surface($surface_value, $custom_surface);
 
-        // Selección final
-        $kw_recommended = $kw_consumption;
-        if ($kw_recommended > $kw_surface) {
+        // Selección final: mínimo entre consumo y superficie
+        $kw_final = $kw_consumption;
+        if ($kw_final > $kw_surface) {
             $kw_final = $kw_surface;
+        }
+
+        // Determinar criterio de ajuste usado
+        $adjustment_reason = '';
+        if ($kw_consumption > $kw_surface) {
+            $adjustment_reason = 'superficie';
+        } elseif ($consumption_type === 'euro') {
+            $adjustment_reason = 'euros';
         } else {
-            $kw_final = $kw_recommended;
+            $adjustment_reason = 'kwh';
         }
 
         // Buscar instalación
@@ -181,8 +230,13 @@ class Origen_Budget_Calculator {
             $battery_price = floatval($this->batteries[$battery_option]);
         }
 
-        // Precio cargador VE
-        $wants_ve = isset($data['wants_ve_charger']) && $data['wants_ve_charger'] === 'si';
+        // Precio cargador VE (ahora es radio button, no checkbox)
+        $ve_charger_val = isset($data['ve_charger']) ? $data['ve_charger'] : 'no';
+        $wants_ve = ($ve_charger_val === 'si');
+        // Mantener retrocompatibilidad con campo anterior
+        if (!$wants_ve && isset($data['wants_ve_charger'])) {
+            $wants_ve = ($data['wants_ve_charger'] === 'si');
+        }
         $ve_price = $wants_ve ? $this->ve_charger_price : 0;
 
         // Precio total
@@ -190,8 +244,8 @@ class Origen_Budget_Calculator {
         $total_price = $base_price + $battery_price + $ve_price;
 
         // Ahorro y amortización
-        $kwh_generated_month = $installation['power'] * self::HSP * 30;
-        $monthly_savings     = $kwh_generated_month * self::ELECTRICITY_PRICE;
+        $kwh_generated_month = $installation['power'] * $this->hsp * 30;
+        $monthly_savings     = $kwh_generated_month * $this->electricity_price;
         $annual_savings      = $monthly_savings * 12;
         $payback_years       = ($annual_savings > 0) ? $total_price / $annual_savings : 0;
 
@@ -206,6 +260,7 @@ class Origen_Budget_Calculator {
             'payback_years'      => round($payback_years, 1),
             'kw_consumption'     => round($kw_consumption, 2),
             'kw_surface'         => round($kw_surface, 2),
+            'adjustment_reason'  => $adjustment_reason,
         );
     }
 }

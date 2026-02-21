@@ -3,7 +3,7 @@
  * Plugin Name: Origen Sostenible - Formulario Evaluación Energética
  * Plugin URI: https://www.origensostenible.net
  * Description: Formulario de evaluación energética con cálculo de presupuesto para instalaciones solares fotovoltaicas.
- * Version: 1.5
+ * Version: 1.5.1
  * Author: Origen Sostenible SL
  * Author URI: https://www.origensostenible.net
  * Text Domain: origen-sostenible-form
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('ORIGEN_FORM_VERSION', '1.5');
+define('ORIGEN_FORM_VERSION', '1.5.1');
 define('ORIGEN_FORM_PATH', plugin_dir_path(__FILE__));
 define('ORIGEN_FORM_URL', plugin_dir_url(__FILE__));
 
@@ -52,8 +52,13 @@ function origen_activate_plugin() {
         financial_capacity varchar(100),
         decision_making varchar(100),
         motivation varchar(100),
+        consumption_other_kwh varchar(50),
+        consumption_other_euros varchar(50),
+        roof_surface_other varchar(50),
         battery_option varchar(50),
         wants_ve_charger varchar(10),
+        contact_preference varchar(50),
+        adjustment_reason varchar(50),
         recommended_power varchar(50),
         recommended_panels int,
         base_price decimal(10,2),
@@ -134,6 +139,7 @@ function origen_enqueue_frontend() {
         'installations' => $calculator->get_installations(),
         'batteries'     => $calculator->get_batteries(),
         've_charger'    => $calculator->get_ve_charger_price(),
+        'tech_params'   => $calculator->get_technical_params(),
     ));
 }
 
@@ -233,6 +239,15 @@ function origen_render_form() {
                         <span class="origen-option-icon">&#128267;</span>
                         <span class="origen-option-text">M&aacute;s de 500 kWh</span>
                     </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="consumption" value="otro_kwh">
+                        <span class="origen-option-icon">&#128221;</span>
+                        <span class="origen-option-text">Otro (especificar)</span>
+                    </label>
+                </div>
+                <div id="otroConsumoKwh" class="origen-otro-input" style="display: none;">
+                    <label>Indica tu consumo mensual en kWh:</label>
+                    <input type="number" name="consumption_other_kwh" placeholder="Ej: 750" min="1">
                 </div>
 
                 <!-- Opciones Euros -->
@@ -252,6 +267,15 @@ function origen_render_form() {
                         <span class="origen-option-icon">&#128183;</span>
                         <span class="origen-option-text">M&aacute;s de 300&euro;/mes</span>
                     </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="consumption" value="otro_euros">
+                        <span class="origen-option-icon">&#128176;</span>
+                        <span class="origen-option-text">Otro (especificar)</span>
+                    </label>
+                </div>
+                <div id="otroConsumoEuros" class="origen-otro-input" style="display: none;">
+                    <label>Indica tu factura mensual en &euro;:</label>
+                    <input type="number" name="consumption_other_euros" placeholder="Ej: 350" min="1">
                 </div>
             </div>
 
@@ -444,6 +468,15 @@ function origen_render_form() {
                         <span class="origen-option-icon">&#10068;</span>
                         <span class="origen-option-text">No estoy seguro</span>
                     </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="roof_surface" value="otro_superficie">
+                        <span class="origen-option-icon">&#128207;</span>
+                        <span class="origen-option-text">Otro (especificar)</span>
+                    </label>
+                </div>
+                <div id="otroSuperficie" class="origen-otro-input" style="display: none;">
+                    <label>Indica la superficie en m&sup2;:</label>
+                    <input type="number" name="roof_surface_other" placeholder="Ej: 35" min="1">
                 </div>
             </div>
 
@@ -557,16 +590,53 @@ function origen_render_form() {
 
                 <h3 class="origen-subsection-title" style="margin-top: 30px;">Cargador Veh&iacute;culo El&eacute;ctrico</h3>
                 <div class="origen-options-grid">
-                    <label class="origen-option-card origen-option-checkbox">
-                        <input type="checkbox" name="wants_ve_charger" value="si">
-                        <span class="origen-option-icon">&#128663;</span>
-                        <span class="origen-option-text">A&ntilde;adir cargador V.E.<br><small class="origen-price-tag">+<span class="ve-charger-price">995</span>&euro;</small></span>
+                    <label class="origen-option-card">
+                        <input type="radio" name="ve_charger" value="no" checked>
+                        <span class="origen-option-icon">&#10060;</span>
+                        <span class="origen-option-text">Sin cargador</span>
+                    </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="ve_charger" value="si">
+                        <span class="origen-option-icon">&#128268;</span>
+                        <span class="origen-option-text">Con cargador V.E.<br><small class="origen-price-tag">+<span class="ve-charger-price">995</span>&euro;</small></span>
                     </label>
                 </div>
             </div>
 
-            <!-- ============ PASO 15: Presupuesto calculado ============ -->
+            <!-- ============ PASO 15: Preferencia de contacto ============ -->
             <div class="origen-form-step" data-step="15">
+                <h2 class="origen-step-title">&Uacute;ltimo paso antes de ver tu presupuesto</h2>
+                <p class="origen-step-subtitle">Para darte un presupuesto m&aacute;s preciso y personalizado, &iquest;cu&aacute;ndo te viene bien que te contactemos?</p>
+                <div class="origen-options-grid">
+                    <label class="origen-option-card">
+                        <input type="radio" name="contact_preference" value="manana" required>
+                        <span class="origen-option-icon">&#127749;</span>
+                        <span class="origen-option-text">Ma&ntilde;ana</span>
+                        <span class="origen-option-subtext">9h - 14h</span>
+                    </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="contact_preference" value="tarde">
+                        <span class="origen-option-icon">&#127751;</span>
+                        <span class="origen-option-text">Tarde</span>
+                        <span class="origen-option-subtext">14h - 19h</span>
+                    </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="contact_preference" value="cualquier_hora">
+                        <span class="origen-option-icon">&#9200;</span>
+                        <span class="origen-option-text">Cualquier hora</span>
+                        <span class="origen-option-subtext">Flexible</span>
+                    </label>
+                    <label class="origen-option-card">
+                        <input type="radio" name="contact_preference" value="solo_email">
+                        <span class="origen-option-icon">&#128231;</span>
+                        <span class="origen-option-text">Solo email</span>
+                        <span class="origen-option-subtext">No llamar</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ============ PASO 16: Presupuesto calculado ============ -->
+            <div class="origen-form-step" data-step="16">
                 <h2 class="origen-step-title">Tu presupuesto estimado</h2>
                 <p class="origen-step-subtitle">Basado en tus respuestas, esta es nuestra recomendaci&oacute;n.</p>
 
@@ -609,11 +679,12 @@ function origen_render_form() {
                     </div>
                 </div>
 
-                <div class="origen-disclaimer">
-                    <p>Esta es una propuesta aproximada y ficticia, sujeta a evaluaci&oacute;n de necesidades reales y visita t&eacute;cnica para presupuesto definitivo. Per&iacute;odo de amortizaci&oacute;n calculado sin ayudas ni subvenciones. Con ayudas el per&iacute;odo se reduce considerablemente.</p>
+                <div class="origen-disclaimer" id="disclaimerBox">
+                    <p id="disclaimerText">Esta es una propuesta aproximada y ficticia, sujeta a contacto directo, evaluaci&oacute;n de necesidades reales y visita t&eacute;cnica para presupuesto definitivo.</p>
                 </div>
 
                 <!-- Campos ocultos para datos calculados -->
+                <input type="hidden" name="calc_adjustment_reason" id="calcAdjustmentReason">
                 <input type="hidden" name="calc_recommended_power" id="calcRecommendedPower">
                 <input type="hidden" name="calc_recommended_panels" id="calcRecommendedPanels">
                 <input type="hidden" name="calc_base_price" id="calcBasePrice">
@@ -634,6 +705,7 @@ function origen_render_form() {
                     &#128222; <a href="tel:+34607445541">607 44 55 41</a><br>
                     &#128172; <a href="https://wa.me/34607445541" target="_blank">WhatsApp: 607 44 55 41</a>
                 </p>
+                <a href="/" class="origen-btn-primary" style="display: inline-block; margin-top: 30px; text-decoration: none;">&larr; Volver al inicio</a>
             </div>
 
             <!-- ============ BOTONES NAVEGACIÓN ============ -->
@@ -676,6 +748,8 @@ function origen_process_form() {
         'property_type'      => sanitize_text_field(wp_unslash($_POST['property_type'] ?? '')),
         'consumption_type'   => sanitize_text_field(wp_unslash($_POST['consumption_type'] ?? 'kwh')),
         'consumption_value'  => sanitize_text_field(wp_unslash($_POST['consumption'] ?? '')),
+        'consumption_other_kwh' => sanitize_text_field(wp_unslash($_POST['consumption_other_kwh'] ?? '')),
+        'consumption_other_euros' => sanitize_text_field(wp_unslash($_POST['consumption_other_euros'] ?? '')),
         'services'           => '',
         'timeframe'          => sanitize_text_field(wp_unslash($_POST['timeframe'] ?? '')),
         'location'           => sanitize_text_field(wp_unslash($_POST['location'] ?? '')),
@@ -689,11 +763,14 @@ function origen_process_form() {
         'roof_type'          => sanitize_text_field(wp_unslash($_POST['roof_type'] ?? '')),
         'roof_orientation'   => sanitize_text_field(wp_unslash($_POST['roof_orientation'] ?? '')),
         'roof_surface'       => sanitize_text_field(wp_unslash($_POST['roof_surface'] ?? '')),
+        'roof_surface_other' => sanitize_text_field(wp_unslash($_POST['roof_surface_other'] ?? '')),
         'financial_capacity' => sanitize_text_field(wp_unslash($_POST['financial_capacity'] ?? '')),
         'decision_making'    => sanitize_text_field(wp_unslash($_POST['decision_making'] ?? '')),
         'motivation'         => sanitize_text_field(wp_unslash($_POST['motivation'] ?? '')),
         'battery_option'     => sanitize_text_field(wp_unslash($_POST['battery_option'] ?? 'none')),
-        'wants_ve_charger'   => sanitize_text_field(wp_unslash($_POST['wants_ve_charger'] ?? 'no')),
+        'wants_ve_charger'   => sanitize_text_field(wp_unslash($_POST['ve_charger'] ?? 'no')),
+        'contact_preference' => sanitize_text_field(wp_unslash($_POST['contact_preference'] ?? '')),
+        'adjustment_reason'  => sanitize_text_field(wp_unslash($_POST['calc_adjustment_reason'] ?? '')),
         'recommended_power'  => sanitize_text_field(wp_unslash($_POST['calc_recommended_power'] ?? '')),
         'recommended_panels' => intval($_POST['calc_recommended_panels'] ?? 0),
         'base_price'         => floatval($_POST['calc_base_price'] ?? 0),
@@ -758,12 +835,14 @@ function origen_get_label($field, $value) {
             'comunidad_vecinos' => 'Comunidad de vecinos',
         ),
         'consumption' => array(
-            'menos_200' => 'Menos de 200 kWh',
-            '200_500'   => '200 - 500 kWh',
-            'mas_500'   => 'Más de 500 kWh',
-            '50_150'    => '50 - 150€/mes',
-            '150_300'   => '150 - 300€/mes',
-            'mas_300'   => 'Más de 300€/mes',
+            'menos_200'  => 'Menos de 200 kWh',
+            '200_500'    => '200 - 500 kWh',
+            'mas_500'    => 'Más de 500 kWh',
+            'otro_kwh'   => 'Personalizado (kWh)',
+            '50_150'     => '50 - 150€/mes',
+            '150_300'    => '150 - 300€/mes',
+            'mas_300'    => 'Más de 300€/mes',
+            'otro_euros' => 'Personalizado (€/mes)',
         ),
         'timeframe' => array(
             'lo_antes_posible' => 'Lo antes posible',
@@ -783,10 +862,11 @@ function origen_get_label($field, $value) {
             'norte_nosabe'     => 'Norte / No lo sé',
         ),
         'roof_surface' => array(
-            'menos_20'  => 'Menos de 20 m²',
-            '20_50'     => '20 - 50 m²',
-            'mas_50'    => 'Más de 50 m²',
-            'no_seguro' => 'No estoy seguro',
+            'menos_20'         => 'Menos de 20 m²',
+            '20_50'            => '20 - 50 m²',
+            'mas_50'           => 'Más de 50 m²',
+            'no_seguro'        => 'No estoy seguro',
+            'otro_superficie'  => 'Personalizado (m²)',
         ),
         'financial_capacity' => array(
             'recursos_propios'         => 'Recursos propios disponibles',
@@ -811,6 +891,17 @@ function origen_get_label($field, $value) {
             '10kwh' => 'Batería 10kWh',
             '15kwh' => 'Batería 15kWh',
         ),
+        'contact_preference' => array(
+            'manana'         => 'Mañana (9h-14h)',
+            'tarde'          => 'Tarde (14h-19h)',
+            'cualquier_hora' => 'Cualquier hora',
+            'solo_email'     => 'Solo email (no llamar)',
+        ),
+        'adjustment_reason' => array(
+            'kwh'        => 'Ajustado a consumo en kWh',
+            'euros'      => 'Ajustado a consumo en €/mes',
+            'superficie' => 'Ajustado a superficie disponible',
+        ),
     );
 
     if (isset($labels[$field][$value])) {
@@ -819,23 +910,35 @@ function origen_get_label($field, $value) {
     return $value;
 }
 
+function origen_get_disclaimer_text($adjustment_reason) {
+    $disclaimer_texts = array(
+        'kwh'        => 'Esta es una propuesta aproximada y ficticia ajustada a su consumo en kWh',
+        'euros'      => 'Esta es una propuesta aproximada y ficticia ajustada a su consumo en &euro;/mes',
+        'superficie' => 'Esta es una propuesta aproximada y ficticia ajustada a su superficie disponible',
+    );
+    $base = isset($disclaimer_texts[$adjustment_reason]) ? $disclaimer_texts[$adjustment_reason] : 'Esta es una propuesta aproximada y ficticia';
+    return $base . ', sujeta a contacto directo, evaluaci&oacute;n de necesidades reales y visita t&eacute;cnica para presupuesto definitivo.';
+}
+
 function origen_send_user_email($data, $submission_id) {
     $name = esc_html($data['name']);
     $wants_quote = $data['wants_quote'] === 'si';
+    $adjustment_reason = isset($data['adjustment_reason']) ? $data['adjustment_reason'] : '';
 
     $budget_section = '';
     if ($wants_quote && floatval($data['total_price']) > 0) {
+        $disclaimer = origen_get_disclaimer_text($adjustment_reason);
         $budget_section = '
         <tr><td colspan="2" style="padding: 20px 0 10px 0;"><h2 style="color: #00AA9F; margin: 0; font-size: 20px;">Tu Presupuesto Estimado</h2></td></tr>
-        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Instalación recomendada:</td><td style="padding: 12px;">' . esc_html($data['recommended_power']) . ' kW (' . intval($data['recommended_panels']) . ' placas)</td></tr>
-        <tr><td style="padding: 12px; font-weight: 600;">Precio base:</td><td style="padding: 12px;">' . number_format(floatval($data['base_price']), 2, ',', '.') . '€</td></tr>
-        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Baterías:</td><td style="padding: 12px;">' . (floatval($data['battery_price']) > 0 ? number_format(floatval($data['battery_price']), 2, ',', '.') . '€' : 'No incluidas') . '</td></tr>
-        <tr><td style="padding: 12px; font-weight: 600;">Cargador V.E.:</td><td style="padding: 12px;">' . (floatval($data['ve_price']) > 0 ? number_format(floatval($data['ve_price']), 2, ',', '.') . '€' : 'No incluido') . '</td></tr>
-        <tr style="background: #00AA9F; color: white;"><td style="padding: 15px; font-weight: 700; font-size: 16px;">PRECIO TOTAL:</td><td style="padding: 15px; font-weight: 700; font-size: 18px;">' . number_format(floatval($data['total_price']), 2, ',', '.') . '€</td></tr>
-        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Ahorro anual estimado:</td><td style="padding: 12px; color: #00AA9F; font-weight: 600;">' . number_format(floatval($data['annual_savings']), 2, ',', '.') . '€/año</td></tr>
-        <tr><td style="padding: 12px; font-weight: 600;">Período de amortización:</td><td style="padding: 12px;">' . number_format(floatval($data['payback_years']), 1, ',', '.') . ' años</td></tr>
+        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Instalaci&oacute;n recomendada:</td><td style="padding: 12px;">' . esc_html($data['recommended_power']) . ' kW (' . intval($data['recommended_panels']) . ' placas)</td></tr>
+        <tr><td style="padding: 12px; font-weight: 600;">Precio base:</td><td style="padding: 12px;">' . number_format(floatval($data['base_price']), 2, ',', '.') . '&euro;</td></tr>
+        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Bater&iacute;as:</td><td style="padding: 12px;">' . (floatval($data['battery_price']) > 0 ? number_format(floatval($data['battery_price']), 2, ',', '.') . '&euro;' : 'No incluidas') . '</td></tr>
+        <tr><td style="padding: 12px; font-weight: 600;">Cargador V.E.:</td><td style="padding: 12px;">' . (floatval($data['ve_price']) > 0 ? number_format(floatval($data['ve_price']), 2, ',', '.') . '&euro;' : 'No incluido') . '</td></tr>
+        <tr style="background: #00AA9F; color: white;"><td style="padding: 15px; font-weight: 700; font-size: 16px;">PRECIO TOTAL:</td><td style="padding: 15px; font-weight: 700; font-size: 18px;">' . number_format(floatval($data['total_price']), 2, ',', '.') . '&euro;</td></tr>
+        <tr style="background: #f0faf9;"><td style="padding: 12px; font-weight: 600;">Ahorro anual estimado:</td><td style="padding: 12px; color: #00AA9F; font-weight: 600;">' . number_format(floatval($data['annual_savings']), 2, ',', '.') . '&euro;/a&ntilde;o</td></tr>
+        <tr><td style="padding: 12px; font-weight: 600;">Per&iacute;odo de amortizaci&oacute;n:</td><td style="padding: 12px;">' . number_format(floatval($data['payback_years']), 1, ',', '.') . ' a&ntilde;os</td></tr>
         <tr><td colspan="2" style="padding: 15px; background: #FFF3E0; border-left: 4px solid #F39322; font-size: 13px; color: #666;">
-            Esta es una propuesta aproximada y ficticia, sujeta a evaluación de necesidades reales y visita técnica para presupuesto definitivo. Período de amortización calculado sin ayudas ni subvenciones. Con ayudas el período se reduce considerablemente.
+            ' . $disclaimer . '
         </td></tr>';
     }
 
@@ -899,26 +1002,37 @@ function origen_send_user_email($data, $submission_id) {
 function origen_send_admin_email($data, $submission_id) {
     $wants_quote = $data['wants_quote'] === 'si';
     $admin_url = admin_url('admin.php?page=origen-form&action=view&id=' . intval($submission_id));
+    $adjustment_reason = isset($data['adjustment_reason']) ? $data['adjustment_reason'] : '';
+
+    // Preferencia de contacto
+    $contact_pref = isset($data['contact_preference']) ? $data['contact_preference'] : '';
+    $contact_pref_label = origen_get_label('contact_preference', $contact_pref);
 
     $budget_section = '';
     if ($wants_quote && floatval($data['total_price']) > 0) {
+        $disclaimer = origen_get_disclaimer_text($adjustment_reason);
         $budget_section = '
         <tr><td colspan="2" style="padding: 20px 0 10px 0;"><h2 style="color: #F39322; margin: 0; font-size: 18px; border-bottom: 2px solid #F39322; padding-bottom: 5px;">PRESUPUESTO CALCULADO</h2></td></tr>
-        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Instalación:</td><td style="padding: 10px 12px;">' . esc_html($data['recommended_power']) . ' kW (' . intval($data['recommended_panels']) . ' placas)</td></tr>
-        <tr><td style="padding: 10px 12px; font-weight: 600;">Precio base:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['base_price']), 2, ',', '.') . '€</td></tr>
-        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Baterías:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['battery_price']), 2, ',', '.') . '€ (' . esc_html(origen_get_label('battery_option', $data['battery_option'])) . ')</td></tr>
-        <tr><td style="padding: 10px 12px; font-weight: 600;">Cargador V.E.:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['ve_price']), 2, ',', '.') . '€</td></tr>
-        <tr style="background: #00AA9F; color: white;"><td style="padding: 12px; font-weight: 700;">PRECIO TOTAL:</td><td style="padding: 12px; font-weight: 700; font-size: 18px;">' . number_format(floatval($data['total_price']), 2, ',', '.') . '€</td></tr>
-        <tr><td style="padding: 10px 12px; font-weight: 600;">Ahorro anual:</td><td style="padding: 10px 12px; color: #00AA9F;">' . number_format(floatval($data['annual_savings']), 2, ',', '.') . '€/año</td></tr>
-        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Amortización:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['payback_years']), 1, ',', '.') . ' años</td></tr>
+        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Instalaci&oacute;n:</td><td style="padding: 10px 12px;">' . esc_html($data['recommended_power']) . ' kW (' . intval($data['recommended_panels']) . ' placas)</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Precio base:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['base_price']), 2, ',', '.') . '&euro;</td></tr>
+        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Bater&iacute;as:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['battery_price']), 2, ',', '.') . '&euro; (' . esc_html(origen_get_label('battery_option', $data['battery_option'])) . ')</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Cargador V.E.:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['ve_price']), 2, ',', '.') . '&euro;</td></tr>
+        <tr style="background: #00AA9F; color: white;"><td style="padding: 12px; font-weight: 700;">PRECIO TOTAL:</td><td style="padding: 12px; font-weight: 700; font-size: 18px;">' . number_format(floatval($data['total_price']), 2, ',', '.') . '&euro;</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Ahorro anual:</td><td style="padding: 10px 12px; color: #00AA9F;">' . number_format(floatval($data['annual_savings']), 2, ',', '.') . '&euro;/a&ntilde;o</td></tr>
+        <tr style="background: #FFF3E0;"><td style="padding: 10px 12px; font-weight: 600;">Amortizaci&oacute;n:</td><td style="padding: 10px 12px;">' . number_format(floatval($data['payback_years']), 1, ',', '.') . ' a&ntilde;os</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Criterio ajuste:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('adjustment_reason', $adjustment_reason)) . '</td></tr>
 
-        <tr><td colspan="2" style="padding: 10px 12px;"><strong>Detalle técnico:</strong></td></tr>
+        <tr><td colspan="2" style="padding: 10px 12px;"><strong>Detalle t&eacute;cnico:</strong></td></tr>
         <tr><td style="padding: 10px 12px; font-weight: 600;">Tipo techo:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('roof_type', $data['roof_type'])) . '</td></tr>
-        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Orientación:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('roof_orientation', $data['roof_orientation'])) . '</td></tr>
-        <tr><td style="padding: 10px 12px; font-weight: 600;">Superficie:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('roof_surface', $data['roof_surface'])) . '</td></tr>
+        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Orientaci&oacute;n:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('roof_orientation', $data['roof_orientation'])) . '</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Superficie:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('roof_surface', $data['roof_surface'])) . (!empty($data['roof_surface_other']) ? ' (' . esc_html($data['roof_surface_other']) . ' m&sup2;)' : '') . '</td></tr>
         <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Cap. financiera:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('financial_capacity', $data['financial_capacity'])) . '</td></tr>
-        <tr><td style="padding: 10px 12px; font-weight: 600;">Toma decisión:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('decision_making', $data['decision_making'])) . '</td></tr>
-        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Motivación:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('motivation', $data['motivation'])) . '</td></tr>';
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Toma decisi&oacute;n:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('decision_making', $data['decision_making'])) . '</td></tr>
+        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Motivaci&oacute;n:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('motivation', $data['motivation'])) . '</td></tr>
+        <tr><td style="padding: 10px 12px; font-weight: 600;">Pref. contacto:</td><td style="padding: 10px 12px; font-weight: 700; color: #F39322;">' . esc_html($contact_pref_label) . '</td></tr>
+        <tr><td colspan="2" style="padding: 15px; background: #FFF3E0; border-left: 4px solid #F39322; font-size: 13px; color: #666;">
+            ' . $disclaimer . '
+        </td></tr>';
     }
 
     $html = '
@@ -951,7 +1065,8 @@ function origen_send_admin_email($data, $submission_id) {
                         <tr><td style="padding: 10px 12px; font-weight: 600;">Plazo:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('timeframe', $data['timeframe'])) . '</td></tr>
                         <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Ubicación:</td><td style="padding: 10px 12px;">' . esc_html($data['location']) . '</td></tr>
                         <tr><td style="padding: 10px 12px; font-weight: 600;">Info adicional:</td><td style="padding: 10px 12px;">' . esc_html($data['additional_info'] ?: 'N/A') . '</td></tr>
-                        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Presupuesto:</td><td style="padding: 10px 12px; font-weight: 700; color: ' . ($wants_quote ? '#00AA9F' : '#F39322') . ';">' . ($wants_quote ? 'SÍ, solicitado' : 'No, prefiere contacto') . '</td></tr>
+                        <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Presupuesto:</td><td style="padding: 10px 12px; font-weight: 700; color: ' . ($wants_quote ? '#00AA9F' : '#F39322') . ';">' . ($wants_quote ? 'S&Iacute;, solicitado' : 'No, prefiere contacto') . '</td></tr>
+                        ' . ($contact_pref ? '<tr><td style="padding: 10px 12px; font-weight: 600;">Pref. contacto:</td><td style="padding: 10px 12px; font-weight: 700; color: #F39322;">' . esc_html($contact_pref_label) . '</td></tr>' : '') . '
 
                         ' . $budget_section . '
                     </table>
@@ -1072,11 +1187,14 @@ function origen_handle_csv_export() {
 
     // Cabeceras
     $headers = array(
-        'ID', 'Tipo propiedad', 'Tipo consumo', 'Valor consumo', 'Servicios',
-        'Plazo', 'Ubicación', 'Info adicional', 'Nombre', 'Email', 'Teléfono',
-        'Privacidad', 'Comercial', 'Quiere presupuesto',
-        'Tipo techo', 'Orientación', 'Superficie', 'Cap. financiera',
+        'ID', 'Tipo propiedad', 'Tipo consumo', 'Valor consumo',
+        'Consumo personalizado kWh', 'Consumo personalizado €',
+        'Servicios', 'Plazo', 'Ubicación', 'Info adicional',
+        'Nombre', 'Email', 'Teléfono', 'Privacidad', 'Comercial',
+        'Quiere presupuesto', 'Tipo techo', 'Orientación', 'Superficie',
+        'Superficie personalizada m²', 'Cap. financiera',
         'Toma decisión', 'Motivación', 'Baterías', 'Cargador VE',
+        'Pref. contacto', 'Criterio ajuste',
         'Potencia recomendada', 'Placas recomendadas', 'Precio base',
         'Precio baterías', 'Precio VE', 'Precio total',
         'Ahorro anual', 'Años amortización', 'IP', 'User Agent', 'Fecha'
@@ -1140,5 +1258,19 @@ function origen_save_pricing() {
     $ve_price = isset($_POST['ve_charger_price']) ? floatval($_POST['ve_charger_price']) : 0;
     update_option('origen_ve_charger_price', $ve_price);
 
-    add_settings_error('origen_prices', 'prices_updated', 'Precios actualizados correctamente.', 'updated');
+    // Parámetros técnicos
+    if (isset($_POST['origen_sqm_per_panel'])) {
+        update_option('origen_sqm_per_panel', floatval($_POST['origen_sqm_per_panel']));
+    }
+    if (isset($_POST['origen_hsp_hours'])) {
+        update_option('origen_hsp_hours', floatval($_POST['origen_hsp_hours']));
+    }
+    if (isset($_POST['origen_electricity_price'])) {
+        update_option('origen_electricity_price', floatval($_POST['origen_electricity_price']));
+    }
+    if (isset($_POST['origen_watts_per_panel'])) {
+        update_option('origen_watts_per_panel', intval($_POST['origen_watts_per_panel']));
+    }
+
+    add_settings_error('origen_prices', 'prices_updated', 'Precios y parámetros actualizados correctamente.', 'updated');
 }

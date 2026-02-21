@@ -1,5 +1,5 @@
 /**
- * Origen Sostenible - Formulario Evaluación Energética v1.5
+ * Origen Sostenible - Formulario Evaluación Energética v1.5.1
  * Frontend JavaScript
  */
 jQuery(document).ready(function($) {
@@ -8,10 +8,11 @@ jQuery(document).ready(function($) {
     var currentStep = 1;
     var skipToEnd = false;
 
-    // Constantes de cálculo
-    var HSP = 4.8;
-    var ELECTRICITY_PRICE = 0.2;
-    var SQM_PER_PANEL = 2.65;
+    // Parámetros técnicos editables desde admin
+    var techParams = origenForm.tech_params || {};
+    var HSP = parseFloat(techParams.hsp) || 4.8;
+    var ELECTRICITY_PRICE = parseFloat(techParams.electricity_price) || 0.2;
+    var SQM_PER_PANEL = parseFloat(techParams.sqm_per_panel) || 2.65;
 
     // Datos de precios desde WordPress
     var installations = origenForm.installations || [];
@@ -34,7 +35,7 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // Lógica especial paso 7
+        // Lógica especial paso 7: si no quiere presupuesto, enviar directamente
         if (currentStep === 7) {
             var wantsQuote = $('input[name="wants_quote"]:checked').val();
             if (wantsQuote === 'no') {
@@ -44,8 +45,8 @@ jQuery(document).ready(function($) {
             }
         }
 
-        // Al llegar al paso 15, calcular presupuesto
-        if (currentStep === 14) {
+        // Al llegar al paso 16, calcular presupuesto (viene del paso 15)
+        if (currentStep === 15) {
             calculateBudget();
         }
 
@@ -63,6 +64,56 @@ jQuery(document).ready(function($) {
     $('#btnSubmit').on('click', function(e) {
         e.preventDefault();
         submitForm();
+    });
+
+    // =========================================================================
+    // AUTO-AVANCE al seleccionar radio button
+    // =========================================================================
+
+    $(document).on('change', '.origen-form-step.active input[type="radio"]', function() {
+        var step = currentStep;
+        var selectedValue = $(this).val();
+
+        // Pasos que NO auto-avanzan
+        var noAutoAdvanceSteps = [5, 6, 14];
+
+        // No auto-avanzar si seleccionó "Otro" (requiere escribir valor)
+        var isOtroSelected = selectedValue.indexOf('otro_') === 0;
+
+        if (noAutoAdvanceSteps.indexOf(step) === -1 && !isOtroSelected) {
+            setTimeout(function() {
+                $('#btnNext').click();
+            }, 300);
+        }
+    });
+
+    // =========================================================================
+    // MOSTRAR/OCULTAR INPUTS "OTRO"
+    // =========================================================================
+
+    // Consumo kWh: mostrar input cuando selecciona "Otro"
+    $(document).on('change', 'input[name="consumption"]', function() {
+        var val = $(this).val();
+        if (val === 'otro_kwh') {
+            $('#otroConsumoKwh').slideDown();
+            $('#otroConsumoEuros').slideUp();
+        } else if (val === 'otro_euros') {
+            $('#otroConsumoEuros').slideDown();
+            $('#otroConsumoKwh').slideUp();
+        } else {
+            $('#otroConsumoKwh').slideUp();
+            $('#otroConsumoEuros').slideUp();
+        }
+    });
+
+    // Superficie: mostrar input cuando selecciona "Otro"
+    $(document).on('change', 'input[name="roof_surface"]', function() {
+        var val = $(this).val();
+        if (val === 'otro_superficie') {
+            $('#otroSuperficie').slideDown();
+        } else {
+            $('#otroSuperficie').slideUp();
+        }
     });
 
     // =========================================================================
@@ -89,7 +140,7 @@ jQuery(document).ready(function($) {
             displayStep = 6;
             displayTotal = 6;
         } else if (currentStep > 7) {
-            displayTotal = 15;
+            displayTotal = 16;
         }
 
         var percent = (displayStep / displayTotal) * 100;
@@ -106,7 +157,7 @@ jQuery(document).ready(function($) {
         }
 
         // Siguiente vs Enviar
-        if (currentStep === 15) {
+        if (currentStep === 16) {
             $('#btnNext').hide();
             $('#btnSubmit').show();
         } else {
@@ -135,6 +186,10 @@ jQuery(document).ready(function($) {
         // Mostrar/ocultar opciones
         $('.consumption-options').hide();
         $('.consumption-options[data-type="' + mode + '"]').show();
+
+        // Ocultar inputs "Otro"
+        $('#otroConsumoKwh').slideUp();
+        $('#otroConsumoEuros').slideUp();
     });
 
     // =========================================================================
@@ -181,10 +236,27 @@ jQuery(document).ready(function($) {
 
             case 2: // Consumo
                 var activeType = $('#consumptionType').val();
-                var checked = $('.consumption-options[data-type="' + activeType + '"] input[type="radio"]:checked').length;
-                if (!checked) {
+                var checkedConsumption = $('.consumption-options[data-type="' + activeType + '"] input[type="radio"]:checked');
+                if (!checkedConsumption.length) {
                     showStepError($step, 'Por favor, selecciona tu consumo aproximado.');
                     isValid = false;
+                } else {
+                    var consumptionVal = checkedConsumption.val();
+                    if (consumptionVal === 'otro_kwh') {
+                        var otroKwh = $('input[name="consumption_other_kwh"]').val();
+                        if (!otroKwh || parseFloat(otroKwh) <= 0) {
+                            $('input[name="consumption_other_kwh"]').addClass('origen-field-error');
+                            showStepError($step, 'Por favor, indica tu consumo en kWh.');
+                            isValid = false;
+                        }
+                    } else if (consumptionVal === 'otro_euros') {
+                        var otroEuros = $('input[name="consumption_other_euros"]').val();
+                        if (!otroEuros || parseFloat(otroEuros) <= 0) {
+                            $('input[name="consumption_other_euros"]').addClass('origen-field-error');
+                            showStepError($step, 'Por favor, indica tu factura en \u20AC/mes.');
+                            isValid = false;
+                        }
+                    }
                 }
                 break;
 
@@ -223,23 +295,23 @@ jQuery(document).ready(function($) {
                 }
                 if (!email || !isValidEmail(email)) {
                     $('#email').addClass('origen-field-error');
-                    showFieldError($('#email'), 'Introduce un email válido.');
+                    showFieldError($('#email'), 'Introduce un email v\u00E1lido.');
                     isValid = false;
                 }
                 if (!phone) {
                     $('#phone').addClass('origen-field-error');
-                    showFieldError($('#phone'), 'El teléfono es obligatorio.');
+                    showFieldError($('#phone'), 'El tel\u00E9fono es obligatorio.');
                     isValid = false;
                 }
                 if (!privacy) {
-                    showStepError($step, 'Debes aceptar la política de privacidad.');
+                    showStepError($step, 'Debes aceptar la pol\u00EDtica de privacidad.');
                     isValid = false;
                 }
                 break;
 
             case 7: // Presupuesto
                 if (!$('input[name="wants_quote"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una opción.');
+                    showStepError($step, 'Por favor, selecciona una opci\u00F3n.');
                     isValid = false;
                 }
                 break;
@@ -253,42 +325,57 @@ jQuery(document).ready(function($) {
 
             case 9:
                 if (!$('input[name="roof_orientation"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una orientación.');
+                    showStepError($step, 'Por favor, selecciona una orientaci\u00F3n.');
                     isValid = false;
                 }
                 break;
 
-            case 10:
-                if (!$('input[name="roof_surface"]:checked').length) {
+            case 10: // Superficie
+                var surfaceChecked = $('input[name="roof_surface"]:checked');
+                if (!surfaceChecked.length) {
                     showStepError($step, 'Por favor, selecciona una superficie.');
                     isValid = false;
+                } else if (surfaceChecked.val() === 'otro_superficie') {
+                    var otroSup = $('input[name="roof_surface_other"]').val();
+                    if (!otroSup || parseFloat(otroSup) <= 0) {
+                        $('input[name="roof_surface_other"]').addClass('origen-field-error');
+                        showStepError($step, 'Por favor, indica la superficie en m\u00B2.');
+                        isValid = false;
+                    }
                 }
                 break;
 
             case 11:
                 if (!$('input[name="financial_capacity"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una opción.');
+                    showStepError($step, 'Por favor, selecciona una opci\u00F3n.');
                     isValid = false;
                 }
                 break;
 
             case 12:
                 if (!$('input[name="decision_making"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una opción.');
+                    showStepError($step, 'Por favor, selecciona una opci\u00F3n.');
                     isValid = false;
                 }
                 break;
 
             case 13:
                 if (!$('input[name="motivation"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una motivación.');
+                    showStepError($step, 'Por favor, selecciona una motivaci\u00F3n.');
                     isValid = false;
                 }
                 break;
 
-            case 14:
+            case 14: // Extras (baterías + cargador)
                 if (!$('input[name="battery_option"]:checked').length) {
-                    showStepError($step, 'Por favor, selecciona una opción de baterías.');
+                    showStepError($step, 'Por favor, selecciona una opci\u00F3n de bater\u00EDas.');
+                    isValid = false;
+                }
+                break;
+
+            case 15: // Preferencia de contacto
+                if (!$('input[name="contact_preference"]:checked').length) {
+                    showStepError($step, 'Por favor, selecciona cu\u00E1ndo prefieres que te contactemos.');
                     isValid = false;
                 }
                 break;
@@ -330,23 +417,45 @@ jQuery(document).ready(function($) {
         var consumptionValue = $('input[name="consumption"]:checked').val();
         var roofSurface = $('input[name="roof_surface"]:checked').val();
         var batteryOption = $('input[name="battery_option"]:checked').val();
-        var wantsVE = $('input[name="wants_ve_charger"]').is(':checked');
+        var wantsVE = ($('input[name="ve_charger"]:checked').val() === 'si');
 
         // Criterio A o B: kW por consumo
         var kwConsumption = 0;
         if (consumptionType === 'euro') {
-            kwConsumption = kwByEuros(consumptionValue);
+            if (consumptionValue === 'otro_euros') {
+                var customEuros = parseFloat($('input[name="consumption_other_euros"]').val()) || 225;
+                kwConsumption = kwByEurosCustom(customEuros);
+            } else {
+                kwConsumption = kwByEuros(consumptionValue);
+            }
         } else {
-            kwConsumption = kwByKwh(consumptionValue);
+            if (consumptionValue === 'otro_kwh') {
+                var customKwh = parseFloat($('input[name="consumption_other_kwh"]').val()) || 350;
+                kwConsumption = kwByKwhCustom(customKwh);
+            } else {
+                kwConsumption = kwByKwh(consumptionValue);
+            }
         }
 
         // Criterio C: kW por superficie
-        var kwSurface = kwBySurface(roofSurface);
+        var kwSurface;
+        if (roofSurface === 'otro_superficie') {
+            var customSqm = parseFloat($('input[name="roof_surface_other"]').val()) || 35;
+            kwSurface = kwBySurfaceCustom(customSqm);
+        } else {
+            kwSurface = kwBySurface(roofSurface);
+        }
 
         // Selección final
         var kwFinal = kwConsumption;
+        var adjustmentReason;
         if (kwFinal > kwSurface) {
             kwFinal = kwSurface;
+            adjustmentReason = 'superficie';
+        } else if (consumptionType === 'euro') {
+            adjustmentReason = 'euros';
+        } else {
+            adjustmentReason = 'kwh';
         }
 
         // Buscar instalación adecuada
@@ -375,7 +484,7 @@ jQuery(document).ready(function($) {
         // Extras
         var extrasText = [];
         if (batteryPrice > 0) {
-            extrasText.push('Batería: +' + formatCurrency(batteryPrice));
+            extrasText.push('Bater\u00EDa: +' + formatCurrency(batteryPrice));
         }
         if (vePrice > 0) {
             extrasText.push('Cargador V.E.: +' + formatCurrency(vePrice));
@@ -388,8 +497,17 @@ jQuery(document).ready(function($) {
         }
 
         $('#totalPrice').text(formatCurrency(totalPrice));
-        $('#annualSavings').text(formatCurrency(annualSavings) + '/año');
-        $('#paybackYears').text(paybackYears.toFixed(1) + ' años');
+        $('#annualSavings').text(formatCurrency(annualSavings) + '/a\u00F1o');
+        $('#paybackYears').text(paybackYears.toFixed(1) + ' a\u00F1os');
+
+        // Disclaimer dinámico
+        var disclaimerTexts = {
+            'kwh': 'Esta es una propuesta aproximada y ficticia ajustada a su consumo en kWh',
+            'euros': 'Esta es una propuesta aproximada y ficticia ajustada a su consumo en \u20AC/mes',
+            'superficie': 'Esta es una propuesta aproximada y ficticia ajustada a su superficie disponible'
+        };
+        var disclaimerBase = disclaimerTexts[adjustmentReason] || 'Esta es una propuesta aproximada y ficticia';
+        $('#disclaimerText').text(disclaimerBase + ', sujeta a contacto directo, evaluaci\u00F3n de necesidades reales y visita t\u00E9cnica para presupuesto definitivo.');
 
         // Guardar en campos ocultos
         $('#calcRecommendedPower').val(installation.power);
@@ -400,8 +518,10 @@ jQuery(document).ready(function($) {
         $('#calcTotalPrice').val(totalPrice.toFixed(2));
         $('#calcAnnualSavings').val(annualSavings.toFixed(2));
         $('#calcPaybackYears').val(paybackYears.toFixed(1));
+        $('#calcAdjustmentReason').val(adjustmentReason);
     }
 
+    // Funciones de cálculo con valores predefinidos
     function kwByKwh(value) {
         var averages = {
             'menos_200': 150,
@@ -409,8 +529,7 @@ jQuery(document).ready(function($) {
             'mas_500': 650
         };
         var kwhMes = averages[value] || 350;
-        var kwhDia = kwhMes / 30;
-        return kwhDia / HSP;
+        return kwhMes / 30 / HSP;
     }
 
     function kwByEuros(value) {
@@ -420,9 +539,16 @@ jQuery(document).ready(function($) {
             'mas_300': 400
         };
         var euroMes = averages[value] || 225;
-        var euroDia = euroMes / 30;
-        var kwhDia = euroDia / ELECTRICITY_PRICE;
-        return kwhDia / HSP;
+        return euroMes / 30 / ELECTRICITY_PRICE / HSP;
+    }
+
+    // Funciones con valores personalizados
+    function kwByKwhCustom(kwhMes) {
+        return kwhMes / 30 / HSP;
+    }
+
+    function kwByEurosCustom(euroMes) {
+        return euroMes / 30 / ELECTRICITY_PRICE / HSP;
     }
 
     function kwBySurface(value) {
@@ -433,6 +559,10 @@ jQuery(document).ready(function($) {
             'no_seguro': 35
         };
         var sqm = surfaces[value] || 35;
+        return kwBySurfaceCustom(sqm);
+    }
+
+    function kwBySurfaceCustom(sqm) {
         var panelsPossible = Math.floor(sqm / SQM_PER_PANEL);
 
         var kwSurface = 0;
@@ -466,7 +596,7 @@ jQuery(document).ready(function($) {
         return value.toLocaleString('es-ES', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }) + '€';
+        }) + '\u20AC';
     }
 
     // =========================================================================
@@ -526,7 +656,7 @@ jQuery(document).ready(function($) {
             },
             error: function() {
                 $('#origenSpinner').hide();
-                alert('Error de conexión. Por favor, inténtalo de nuevo.');
+                alert('Error de conexi\u00F3n. Por favor, int\u00E9ntalo de nuevo.');
                 $('#navButtons').show();
             }
         });

@@ -41,7 +41,7 @@ foreach ($installations as $inst) {
 
     <div class="origen-admin-header">
         <h1>Configuración de Precios</h1>
-        <span class="badge">v1.5</span>
+        <span class="badge">v1.5.1</span>
     </div>
 
     <form method="post" action="">
@@ -100,6 +100,33 @@ foreach ($installations as $inst) {
                 <label>Precio:</label>
                 <input type="number" name="ve_charger_price" value="<?php echo esc_attr($ve_price); ?>" min="0" step="0.01">
                 <span>&euro;</span>
+            </div>
+        </div>
+
+        <!-- Parámetros Técnicos -->
+        <div class="origen-pricing-section">
+            <h2>Par&aacute;metros T&eacute;cnicos</h2>
+            <p style="color: #666; margin-top: -10px; margin-bottom: 20px;">Estos valores se usan en los c&aacute;lculos de presupuesto. Modif&iacute;calos seg&uacute;n tus especificaciones t&eacute;cnicas.</p>
+
+            <div class="origen-pricing-single">
+                <label>m&sup2; por placa:</label>
+                <input type="number" name="origen_sqm_per_panel" value="<?php echo esc_attr(get_option('origen_sqm_per_panel', 2.65)); ?>" step="0.01" min="1" max="5" style="width: 100px;">
+                <span>m&sup2;</span>
+            </div>
+            <div class="origen-pricing-single">
+                <label>HSP (horas sol):</label>
+                <input type="number" name="origen_hsp_hours" value="<?php echo esc_attr(get_option('origen_hsp_hours', 4.8)); ?>" step="0.1" min="1" max="8" style="width: 100px;">
+                <span>horas/d&iacute;a</span>
+            </div>
+            <div class="origen-pricing-single">
+                <label>Precio electricidad:</label>
+                <input type="number" name="origen_electricity_price" value="<?php echo esc_attr(get_option('origen_electricity_price', 0.2)); ?>" step="0.01" min="0.01" max="1" style="width: 100px;">
+                <span>&euro;/kWh</span>
+            </div>
+            <div class="origen-pricing-single">
+                <label>Potencia/placa:</label>
+                <input type="number" name="origen_watts_per_panel" value="<?php echo esc_attr(get_option('origen_watts_per_panel', 590)); ?>" step="10" min="100" max="1000" style="width: 100px;">
+                <span>W</span>
             </div>
         </div>
 
