@@ -1,5 +1,5 @@
 /**
- * Origen Sostenible - Formulario Evaluación Energética v1.5.1-fix
+ * Origen Sostenible - Formulario Evaluación Energética v1.5.3
  * Frontend JavaScript
  */
 jQuery(document).ready(function($) {
@@ -8,6 +8,7 @@ jQuery(document).ready(function($) {
     var currentStep = 1;
     var skipToEnd = false;
     var formSubmitting = false;
+    var veChargerPreselected = false;
 
     // ID único para prevenir envíos duplicados
     var submissionId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -32,6 +33,18 @@ jQuery(document).ready(function($) {
     updateDynamicPrices();
 
     // =========================================================================
+    // DETECCIÓN CARGADOR VE EN SERVICIOS
+    // =========================================================================
+
+    $(document).on('change', 'input[name="services[]"]', function() {
+        var services = [];
+        $('input[name="services[]"]:checked').each(function() {
+            services.push($(this).val());
+        });
+        veChargerPreselected = (services.indexOf('punto_recarga') !== -1);
+    });
+
+    // =========================================================================
     // NAVEGACIÓN
     // =========================================================================
 
@@ -50,6 +63,14 @@ jQuery(document).ready(function($) {
             }
         }
 
+        // Al pasar del paso 14 (baterías): si VE preseleccionado en servicios, saltar paso 15
+        if (currentStep === 14 && veChargerPreselected) {
+            $('input[name="ve_charger"][value="si"]').prop('checked', true);
+            currentStep = 16; // Saltar directo a preferencia de contacto
+            showStep(currentStep);
+            return;
+        }
+
         // Al llegar al paso 17 (viene del paso 16), calcular presupuesto
         if (currentStep === 16) {
             calculateBudget();
@@ -66,6 +87,12 @@ jQuery(document).ready(function($) {
 
     $('#btnPrev').on('click', function() {
         if (currentStep > 1) {
+            // Si está en paso 16 y se saltó paso 15 (VE preseleccionado), volver a paso 14
+            if (currentStep === 16 && veChargerPreselected) {
+                currentStep = 14;
+                showStep(currentStep);
+                return;
+            }
             currentStep--;
             showStep(currentStep);
         }
@@ -149,9 +176,9 @@ jQuery(document).ready(function($) {
         updateProgress();
         updateButtons();
 
-        // Scroll al inicio del formulario
+        // Scroll al inicio del formulario con offset para header fijo
         $('html, body').animate({
-            scrollTop: $('#origenFormWrapper').offset().top - 20
+            scrollTop: $('#origenFormWrapper').offset().top - 100
         }, 300);
     }
 
@@ -692,7 +719,7 @@ jQuery(document).ready(function($) {
                     $('#navButtons').hide();
 
                     $('html, body').animate({
-                        scrollTop: $('#origenFormWrapper').offset().top - 20
+                        scrollTop: $('#origenFormWrapper').offset().top - 100
                     }, 300);
                 } else {
                     formSubmitting = false;

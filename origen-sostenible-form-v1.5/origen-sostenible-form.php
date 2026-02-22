@@ -3,7 +3,7 @@
  * Plugin Name: Origen Sostenible - Formulario Evaluación Energética
  * Plugin URI: https://www.origensostenible.net
  * Description: Formulario de evaluación energética con cálculo de presupuesto para instalaciones solares fotovoltaicas.
- * Version: 1.5.1
+ * Version: 1.5.3
  * Author: Origen Sostenible SL
  * Author URI: https://www.origensostenible.net
  * Text Domain: origen-sostenible-form
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('ORIGEN_FORM_VERSION', '1.5.1');
+define('ORIGEN_FORM_VERSION', '1.5.3');
 define('ORIGEN_FORM_PATH', plugin_dir_path(__FILE__));
 define('ORIGEN_FORM_URL', plugin_dir_url(__FILE__));
 
@@ -603,7 +603,7 @@ function origen_render_form() {
                 <p class="origen-step-subtitle">&iquest;Deseas a&ntilde;adir un punto de recarga para tu veh&iacute;culo el&eacute;ctrico?</p>
                 <div class="origen-options-grid">
                     <label class="origen-option-card">
-                        <input type="radio" name="ve_charger" value="no" checked>
+                        <input type="radio" name="ve_charger" value="no" required checked>
                         <span class="origen-option-icon">&#10060;</span>
                         <span class="origen-option-text">Sin cargador</span>
                     </label>
@@ -1086,6 +1086,8 @@ function origen_send_admin_email($data, $submission_id) {
                         <tr><td colspan="2" style="padding: 15px 0 5px 0;"><h3 style="margin: 0; padding: 0 12px; color: #333;">Datos del formulario</h3></td></tr>
                         <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Propiedad:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('property_type', $data['property_type'])) . '</td></tr>
                         <tr><td style="padding: 10px 12px; font-weight: 600;">Consumo:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('consumption', $data['consumption_value'])) . ' (' . esc_html($data['consumption_type']) . ')</td></tr>
+                        ' . (!empty($data['consumption_other_kwh']) ? '<tr style="background: #f0faf9;"><td style="padding: 10px 12px; font-weight: 600;">Consumo personalizado:</td><td style="padding: 10px 12px; color: #00AA9F; font-weight: 600;">' . esc_html($data['consumption_other_kwh']) . ' kWh/mes</td></tr>' : '') . '
+                        ' . (!empty($data['consumption_other_euros']) ? '<tr style="background: #f0faf9;"><td style="padding: 10px 12px; font-weight: 600;">Consumo personalizado:</td><td style="padding: 10px 12px; color: #00AA9F; font-weight: 600;">' . esc_html($data['consumption_other_euros']) . ' &euro;/mes</td></tr>' : '') . '
                         <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Servicios:</td><td style="padding: 10px 12px;">' . esc_html($data['services']) . '</td></tr>
                         <tr><td style="padding: 10px 12px; font-weight: 600;">Plazo:</td><td style="padding: 10px 12px;">' . esc_html(origen_get_label('timeframe', $data['timeframe'])) . '</td></tr>
                         <tr style="background: #f9f9f9;"><td style="padding: 10px 12px; font-weight: 600;">Ubicación:</td><td style="padding: 10px 12px;">' . esc_html($data['location']) . '</td></tr>
