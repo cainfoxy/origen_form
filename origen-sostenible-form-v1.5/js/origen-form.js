@@ -1,5 +1,5 @@
 /**
- * Origen Sostenible - Formulario Evaluación Energética v1.5.1
+ * Origen Sostenible - Formulario Evaluación Energética v1.5.1-fix
  * Frontend JavaScript
  */
 jQuery(document).ready(function($) {
@@ -7,6 +7,11 @@ jQuery(document).ready(function($) {
 
     var currentStep = 1;
     var skipToEnd = false;
+    var formSubmitting = false;
+
+    // ID único para prevenir envíos duplicados
+    var submissionId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    $('#submissionUid').val(submissionId);
 
     // Parámetros técnicos editables desde admin
     var techParams = origenForm.tech_params || {};
@@ -45,9 +50,14 @@ jQuery(document).ready(function($) {
             }
         }
 
-        // Al llegar al paso 16, calcular presupuesto (viene del paso 15)
-        if (currentStep === 15) {
+        // Al llegar al paso 17 (viene del paso 16), calcular presupuesto
+        if (currentStep === 16) {
             calculateBudget();
+        }
+
+        // Límite máximo: paso 17
+        if (currentStep >= 17) {
+            return;
         }
 
         currentStep++;
@@ -74,11 +84,24 @@ jQuery(document).ready(function($) {
         var step = currentStep;
         var selectedValue = $(this).val();
 
-        // Pasos que NO auto-avanzan
-        var noAutoAdvanceSteps = [5, 6, 14];
+        // Pasos que NO auto-avanzan (inputs de texto, múltiples secciones)
+        var noAutoAdvanceSteps = [5, 6, 14, 15];
 
         // No auto-avanzar si seleccionó "Otro" (requiere escribir valor)
         var isOtroSelected = selectedValue.indexOf('otro_') === 0;
+
+        // Paso 7 "No": no auto-avanzar, mostrar botón enviar
+        if (step === 7 && selectedValue === 'no') {
+            $('#btnNext').hide();
+            $('#btnSubmit').show();
+            return;
+        }
+
+        // Paso 7 "Sí": restaurar botón siguiente
+        if (step === 7 && selectedValue === 'si') {
+            $('#btnSubmit').hide();
+            $('#btnNext').show();
+        }
 
         if (noAutoAdvanceSteps.indexOf(step) === -1 && !isOtroSelected) {
             setTimeout(function() {
@@ -134,13 +157,13 @@ jQuery(document).ready(function($) {
 
     function updateProgress() {
         var displayStep = currentStep;
-        var displayTotal = 6;
+        var displayTotal = 7;
 
-        if (currentStep === 7) {
-            displayStep = 6;
-            displayTotal = 6;
-        } else if (currentStep > 7) {
-            displayTotal = 16;
+        if (currentStep <= 7) {
+            displayStep = currentStep;
+            displayTotal = 7;
+        } else {
+            displayTotal = 17;
         }
 
         var percent = (displayStep / displayTotal) * 100;
@@ -157,9 +180,20 @@ jQuery(document).ready(function($) {
         }
 
         // Siguiente vs Enviar
-        if (currentStep === 16) {
+        if (currentStep === 17) {
+            // Paso 17 (presupuesto) = último paso, mostrar Enviar
             $('#btnNext').hide();
             $('#btnSubmit').show();
+        } else if (currentStep === 7) {
+            // Paso 7: depende de la selección
+            var wantsQuote = $('input[name="wants_quote"]:checked').val();
+            if (wantsQuote === 'no') {
+                $('#btnNext').hide();
+                $('#btnSubmit').show();
+            } else {
+                $('#btnNext').show();
+                $('#btnSubmit').hide();
+            }
         } else {
             $('#btnNext').show();
             $('#btnSubmit').hide();
@@ -366,14 +400,21 @@ jQuery(document).ready(function($) {
                 }
                 break;
 
-            case 14: // Extras (baterías + cargador)
+            case 14: // Baterías
                 if (!$('input[name="battery_option"]:checked').length) {
                     showStepError($step, 'Por favor, selecciona una opci\u00F3n de bater\u00EDas.');
                     isValid = false;
                 }
                 break;
 
-            case 15: // Preferencia de contacto
+            case 15: // Cargador VE
+                if (!$('input[name="ve_charger"]:checked').length) {
+                    showStepError($step, 'Por favor, selecciona una opci\u00F3n.');
+                    isValid = false;
+                }
+                break;
+
+            case 16: // Preferencia de contacto
                 if (!$('input[name="contact_preference"]:checked').length) {
                     showStepError($step, 'Por favor, selecciona cu\u00E1ndo prefieres que te contactemos.');
                     isValid = false;
@@ -621,6 +662,10 @@ jQuery(document).ready(function($) {
     // =========================================================================
 
     function submitForm() {
+        // Prevenir envío duplicado
+        if (formSubmitting) return;
+        formSubmitting = true;
+
         var $form = $('#origenEvaluationForm');
 
         // Mostrar spinner
@@ -650,11 +695,13 @@ jQuery(document).ready(function($) {
                         scrollTop: $('#origenFormWrapper').offset().top - 20
                     }, 300);
                 } else {
+                    formSubmitting = false;
                     alert(response.data.message || 'Error al enviar el formulario.');
                     $('#navButtons').show();
                 }
             },
             error: function() {
+                formSubmitting = false;
                 $('#origenSpinner').hide();
                 alert('Error de conexi\u00F3n. Por favor, int\u00E9ntalo de nuevo.');
                 $('#navButtons').show();

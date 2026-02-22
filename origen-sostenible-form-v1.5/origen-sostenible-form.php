@@ -177,7 +177,7 @@ function origen_render_form() {
             <div class="origen-progress-bar">
                 <div class="origen-progress-fill" id="progressBar"></div>
             </div>
-            <div class="origen-step-indicator" id="stepIndicator">1 de 6</div>
+            <div class="origen-step-indicator" id="stepIndicator">1 de 7</div>
         </div>
 
         <form id="origenEvaluationForm" novalidate>
@@ -216,14 +216,14 @@ function origen_render_form() {
                 <p class="origen-step-subtitle">Indica tu consumo aproximado. Puedes verlo en kWh o en euros/mes.</p>
 
                 <div class="origen-toggle-container">
-                    <button type="button" class="consumption-toggle active" data-mode="kwh">Ver en kWh</button>
-                    <button type="button" class="consumption-toggle" data-mode="euro">Ver en &euro;/mes</button>
+                    <button type="button" class="consumption-toggle" data-mode="kwh">Ver en kWh</button>
+                    <button type="button" class="consumption-toggle active" data-mode="euro">Ver en &euro;/mes</button>
                 </div>
 
-                <input type="hidden" name="consumption_type" id="consumptionType" value="kwh">
+                <input type="hidden" name="consumption_type" id="consumptionType" value="euro">
 
                 <!-- Opciones kWh -->
-                <div class="origen-options-grid consumption-options" data-type="kwh">
+                <div class="origen-options-grid consumption-options" data-type="kwh" style="display:none;">
                     <label class="origen-option-card">
                         <input type="radio" name="consumption" value="menos_200" required>
                         <span class="origen-option-icon">&#128161;</span>
@@ -251,7 +251,7 @@ function origen_render_form() {
                 </div>
 
                 <!-- Opciones Euros -->
-                <div class="origen-options-grid consumption-options" data-type="euro" style="display:none;">
+                <div class="origen-options-grid consumption-options" data-type="euro">
                     <label class="origen-option-card">
                         <input type="radio" name="consumption" value="50_150">
                         <span class="origen-option-icon">&#128181;</span>
@@ -298,6 +298,16 @@ function origen_render_form() {
                         <input type="checkbox" name="services[]" value="servicios_electricos">
                         <span class="origen-option-icon">&#9889;</span>
                         <span class="origen-option-text">Servicios el&eacute;ctricos</span>
+                    </label>
+                    <label class="origen-option-card origen-option-checkbox">
+                        <input type="checkbox" name="services[]" value="mantenimiento">
+                        <span class="origen-option-icon">&#128295;</span>
+                        <span class="origen-option-text">Mantenimiento</span>
+                    </label>
+                    <label class="origen-option-card origen-option-checkbox">
+                        <input type="checkbox" name="services[]" value="asesoria">
+                        <span class="origen-option-icon">&#128161;</span>
+                        <span class="origen-option-text">Asesor&iacute;a energ&eacute;tica</span>
                     </label>
                 </div>
             </div>
@@ -559,12 +569,10 @@ function origen_render_form() {
                 </div>
             </div>
 
-            <!-- ============ PASO 14: Extras ============ -->
+            <!-- ============ PASO 14: Baterías ============ -->
             <div class="origen-form-step" data-step="14">
-                <h2 class="origen-step-title">Extras opcionales</h2>
-                <p class="origen-step-subtitle">Selecciona si deseas a&ntilde;adir bater&iacute;as o cargador para veh&iacute;culo el&eacute;ctrico.</p>
-
-                <h3 class="origen-subsection-title">Bater&iacute;as de almacenamiento</h3>
+                <h2 class="origen-step-title">Bater&iacute;as de almacenamiento</h2>
+                <p class="origen-step-subtitle">&iquest;Deseas a&ntilde;adir bater&iacute;as a tu instalaci&oacute;n?</p>
                 <div class="origen-options-grid">
                     <label class="origen-option-card">
                         <input type="radio" name="battery_option" value="none" required checked>
@@ -587,8 +595,12 @@ function origen_render_form() {
                         <span class="origen-option-text">Bater&iacute;a 15kWh<br><small class="origen-price-tag">+<span class="battery-price-15kwh">3.536,55</span>&euro;</small></span>
                     </label>
                 </div>
+            </div>
 
-                <h3 class="origen-subsection-title" style="margin-top: 30px;">Cargador Veh&iacute;culo El&eacute;ctrico</h3>
+            <!-- ============ PASO 15: Cargador Vehículo Eléctrico ============ -->
+            <div class="origen-form-step" data-step="15">
+                <h2 class="origen-step-title">Cargador Veh&iacute;culo El&eacute;ctrico</h2>
+                <p class="origen-step-subtitle">&iquest;Deseas a&ntilde;adir un punto de recarga para tu veh&iacute;culo el&eacute;ctrico?</p>
                 <div class="origen-options-grid">
                     <label class="origen-option-card">
                         <input type="radio" name="ve_charger" value="no" checked>
@@ -603,8 +615,8 @@ function origen_render_form() {
                 </div>
             </div>
 
-            <!-- ============ PASO 15: Preferencia de contacto ============ -->
-            <div class="origen-form-step" data-step="15">
+            <!-- ============ PASO 16: Preferencia de contacto ============ -->
+            <div class="origen-form-step" data-step="16">
                 <h2 class="origen-step-title">&Uacute;ltimo paso antes de ver tu presupuesto</h2>
                 <p class="origen-step-subtitle">Para darte un presupuesto m&aacute;s preciso y personalizado, &iquest;cu&aacute;ndo te viene bien que te contactemos?</p>
                 <div class="origen-options-grid">
@@ -635,8 +647,8 @@ function origen_render_form() {
                 </div>
             </div>
 
-            <!-- ============ PASO 16: Presupuesto calculado ============ -->
-            <div class="origen-form-step" data-step="16">
+            <!-- ============ PASO 17: Presupuesto calculado ============ -->
+            <div class="origen-form-step" data-step="17">
                 <h2 class="origen-step-title">Tu presupuesto estimado</h2>
                 <p class="origen-step-subtitle">Basado en tus respuestas, esta es nuestra recomendaci&oacute;n.</p>
 
@@ -683,6 +695,8 @@ function origen_render_form() {
                     <p id="disclaimerText">Esta es una propuesta aproximada y ficticia, sujeta a contacto directo, evaluaci&oacute;n de necesidades reales y visita t&eacute;cnica para presupuesto definitivo.</p>
                 </div>
 
+                <!-- Anti-duplicado -->
+                <input type="hidden" name="submission_uid" id="submissionUid">
                 <!-- Campos ocultos para datos calculados -->
                 <input type="hidden" name="calc_adjustment_reason" id="calcAdjustmentReason">
                 <input type="hidden" name="calc_recommended_power" id="calcRecommendedPower">
@@ -738,6 +752,16 @@ function origen_process_form() {
     // Verificar nonce
     if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'origen_form_nonce')) {
         wp_send_json_error(array('message' => 'Error de seguridad. Recarga la página e inténtalo de nuevo.'));
+    }
+
+    // Anti-duplicado: verificar submission_uid
+    $submission_uid = sanitize_text_field(wp_unslash($_POST['submission_uid'] ?? ''));
+    if (!empty($submission_uid)) {
+        $transient_key = 'origen_sub_' . md5($submission_uid);
+        if (get_transient($transient_key)) {
+            wp_send_json_error(array('message' => 'Esta solicitud ya fue enviada.'));
+        }
+        set_transient($transient_key, true, 300);
     }
 
     global $wpdb;
@@ -950,8 +974,8 @@ function origen_send_user_email($data, $submission_id) {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <tr>
                 <td style="background: linear-gradient(135deg, #00AA9F 0%, #008A82 100%); padding: 30px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Origen Sostenible</h1>
-                    <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Evaluación Energética</p>
+                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png" alt="Origen Sostenible" style="max-width: 180px; height: auto; margin-bottom: 15px;">
+                    <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Evaluaci&oacute;n Energ&eacute;tica</p>
                 </td>
             </tr>
             <tr>
@@ -1043,8 +1067,9 @@ function origen_send_admin_email($data, $submission_id) {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <tr>
                 <td style="background: linear-gradient(135deg, #F39322 0%, #e07d0a 100%); padding: 25px; text-align: center;">
+                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png" alt="Origen Sostenible" style="max-width: 150px; height: auto; margin-bottom: 10px;">
                     <h1 style="color: white; margin: 0; font-size: 20px;">Nueva Solicitud #' . intval($submission_id) . '</h1>
-                    <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Formulario de Evaluación Energética</p>
+                    <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Formulario de Evaluaci&oacute;n Energ&eacute;tica</p>
                 </td>
             </tr>
             <tr>
