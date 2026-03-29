@@ -112,7 +112,7 @@ jQuery(document).ready(function($) {
         var selectedValue = $(this).val();
 
         // Pasos que NO auto-avanzan (inputs de texto, múltiples secciones)
-        var noAutoAdvanceSteps = [5, 6, 14, 15];
+        var noAutoAdvanceSteps = [5, 6];
 
         // No auto-avanzar si seleccionó "Otro" (requiere escribir valor)
         var isOtroSelected = selectedValue.indexOf('otro_') === 0;

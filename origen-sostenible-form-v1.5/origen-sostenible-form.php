@@ -3,7 +3,7 @@
  * Plugin Name: Origen Sostenible - Formulario Evaluación Energética
  * Plugin URI: https://www.origensostenible.net
  * Description: Formulario de evaluación energética con cálculo de presupuesto para instalaciones solares fotovoltaicas.
- * Version: 1.5.3
+ * Version: 1.5.4
  * Author: Origen Sostenible SL
  * Author URI: https://www.origensostenible.net
  * Text Domain: origen-sostenible-form
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('ORIGEN_FORM_VERSION', '1.5.3');
+define('ORIGEN_FORM_VERSION', '1.5.4');
 define('ORIGEN_FORM_PATH', plugin_dir_path(__FILE__));
 define('ORIGEN_FORM_URL', plugin_dir_url(__FILE__));
 
@@ -575,7 +575,7 @@ function origen_render_form() {
                 <p class="origen-step-subtitle">&iquest;Deseas a&ntilde;adir bater&iacute;as a tu instalaci&oacute;n?</p>
                 <div class="origen-options-grid">
                     <label class="origen-option-card">
-                        <input type="radio" name="battery_option" value="none" required checked>
+                        <input type="radio" name="battery_option" value="none" required>
                         <span class="origen-option-icon">&#11093;</span>
                         <span class="origen-option-text">Sin bater&iacute;as</span>
                     </label>
@@ -603,7 +603,7 @@ function origen_render_form() {
                 <p class="origen-step-subtitle">&iquest;Deseas a&ntilde;adir un punto de recarga para tu veh&iacute;culo el&eacute;ctrico?</p>
                 <div class="origen-options-grid">
                     <label class="origen-option-card">
-                        <input type="radio" name="ve_charger" value="no" required checked>
+                        <input type="radio" name="ve_charger" value="no" required>
                         <span class="origen-option-icon">&#10060;</span>
                         <span class="origen-option-text">Sin cargador</span>
                     </label>
@@ -974,7 +974,7 @@ function origen_send_user_email($data, $submission_id) {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <tr>
                 <td style="background: linear-gradient(135deg, #00AA9F 0%, #008A82 100%); padding: 30px; text-align: center;">
-                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png" alt="Origen Sostenible" style="max-width: 180px; height: auto; margin-bottom: 15px;">
+                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png?v=' . ORIGEN_FORM_VERSION . '" alt="Origen Sostenible" style="max-width: 180px; height: auto; margin-bottom: 15px;">
                     <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Evaluaci&oacute;n Energ&eacute;tica</p>
                 </td>
             </tr>
@@ -1067,7 +1067,7 @@ function origen_send_admin_email($data, $submission_id) {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <tr>
                 <td style="background: linear-gradient(135deg, #F39322 0%, #e07d0a 100%); padding: 25px; text-align: center;">
-                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png" alt="Origen Sostenible" style="max-width: 150px; height: auto; margin-bottom: 10px;">
+                    <img src="https://www.origensostenible.net/wp-content/uploads/2026/02/Logo_blanco_v5.png?v=' . ORIGEN_FORM_VERSION . '" alt="Origen Sostenible" style="max-width: 150px; height: auto; margin-bottom: 10px;">
                     <h1 style="color: white; margin: 0; font-size: 20px;">Nueva Solicitud #' . intval($submission_id) . '</h1>
                     <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Formulario de Evaluaci&oacute;n Energ&eacute;tica</p>
                 </td>
@@ -1300,4 +1300,50 @@ function origen_save_pricing() {
     }
 
     add_settings_error('origen_prices', 'prices_updated', 'Precios y parámetros actualizados correctamente.', 'updated');
+}
+
+// =============================================================================
+// BORRADO DE REGISTROS (Admin AJAX)
+// =============================================================================
+
+add_action('wp_ajax_origen_delete_all_submissions', 'origen_delete_all_submissions');
+
+function origen_delete_all_submissions() {
+    check_ajax_referer('origen_delete_all', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => 'No tienes permisos para realizar esta acción.'));
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'origen_form_submissions';
+    $deleted = $wpdb->query("TRUNCATE TABLE $table_name");
+
+    if ($deleted !== false) {
+        wp_send_json_success(array('message' => 'Todos los registros han sido eliminados.'));
+    } else {
+        wp_send_json_error(array('message' => 'Error al eliminar los registros.'));
+    }
+}
+
+add_action('wp_ajax_origen_delete_single_submission', 'origen_delete_single_submission');
+
+function origen_delete_single_submission() {
+    check_ajax_referer('origen_delete_single', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => 'No tienes permisos.'));
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'origen_form_submissions';
+    $id = intval($_POST['id']);
+
+    $deleted = $wpdb->delete($table_name, array('id' => $id), array('%d'));
+
+    if ($deleted) {
+        wp_send_json_success();
+    } else {
+        wp_send_json_error(array('message' => 'Error al eliminar.'));
+    }
 }

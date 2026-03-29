@@ -181,6 +181,68 @@ $results = $wpdb->get_results($wpdb->prepare($query, $query_params), ARRAY_A);
         <a href="<?php echo esc_url(admin_url('admin.php?page=origen-form')); ?>" class="button">Limpiar</a>
     </form>
 
+    <!-- Zona de borrado masivo -->
+    <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <h3 style="margin: 0 0 10px 0; color: #856404;">Zona peligrosa</h3>
+        <p style="margin: 0 0 10px 0; color: #856404;">Esta accion eliminara TODOS los registros de formularios. No se puede deshacer.</p>
+        <button type="button" id="deleteAllRecords" class="button" style="background: #dc3545; color: white; border: none; padding: 10px 20px; cursor: pointer;">
+            Borrar TODOS los registros
+        </button>
+    </div>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#deleteAllRecords').on('click', function() {
+            if (!confirm('Estas SEGURO de que quieres borrar TODOS los registros?\n\nEsta accion NO se puede deshacer.')) {
+                return;
+            }
+            if (!confirm('ULTIMA CONFIRMACION:\n\nRealmente quieres eliminar TODOS los formularios enviados?')) {
+                return;
+            }
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'origen_delete_all_submissions',
+                    nonce: '<?php echo esc_js(wp_create_nonce('origen_delete_all')); ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Se han eliminado todos los registros correctamente.');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.data.message);
+                    }
+                },
+                error: function() {
+                    alert('Error de conexion. Por favor, intentalo de nuevo.');
+                }
+            });
+        });
+        $('.delete-single').on('click', function() {
+            var id = $(this).data('id');
+            if (!confirm('Estas seguro de que quieres eliminar el registro #' + id + '?')) {
+                return;
+            }
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'origen_delete_single_submission',
+                    nonce: '<?php echo esc_js(wp_create_nonce('origen_delete_single')); ?>',
+                    id: id
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.data.message);
+                    }
+                }
+            });
+        });
+    });
+    </script>
+
     <?php if (empty($results)): ?>
         <div class="origen-empty-state">
             <span class="dashicons dashicons-clipboard"></span>
@@ -215,7 +277,8 @@ $results = $wpdb->get_results($wpdb->prepare($query, $query_params), ARRAY_A);
                         <?php endif; ?>
                     </td>
                     <td>
-                        <a href="<?php echo esc_url(admin_url('admin.php?page=origen-form&action=view&id=' . intval($row['id']))); ?>" class="action-link">Ver detalles</a>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=origen-form&action=view&id=' . intval($row['id']))); ?>" class="action-link">Ver</a>
+                        <button class="button button-small delete-single" data-id="<?php echo intval($row['id']); ?>" style="background: #dc3545; color: white; border: none; margin-left: 5px; cursor: pointer;">Eliminar</button>
                     </td>
                 </tr>
                 <?php endforeach; ?>
